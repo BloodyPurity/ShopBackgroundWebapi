@@ -20,7 +20,7 @@ namespace ShopServerSystem.Services.Implementation
         { 
             _authSettings = authSettings.Value;
         }
-        public UserResponseVM Authenticate(User? user)
+        public UserLoginResponseVM Authenticate(User? user)
         {
             //通过账号密码验证
             if(user!=null)
@@ -29,7 +29,7 @@ namespace ShopServerSystem.Services.Implementation
                 //创建令牌
                 var token = GenerateJwtToken(_user);
                 //返回包含用户信息的令牌
-                return new UserResponseVM(_user, token);
+                return new UserLoginResponseVM(_user, token);
             }
             return null;
         }
@@ -47,7 +47,7 @@ namespace ShopServerSystem.Services.Implementation
                         new Claim("role",user.Utype)
                     }),
                 //过期时间
-                Expires = DateTime.UtcNow.AddMinutes(20),
+                Expires = DateTime.UtcNow.AddDays(7),
                 //证书签名
                 SigningCredentials=new SigningCredentials
                 (
@@ -61,11 +61,5 @@ namespace ShopServerSystem.Services.Implementation
             return tokenHandler.WriteToken(token);
         }
 
-        public User GetByAccount(string uaccount)
-        {
-            if (uaccount == _user.Uaccount)
-                return _user;
-            else return null;
-        }
     }
 }

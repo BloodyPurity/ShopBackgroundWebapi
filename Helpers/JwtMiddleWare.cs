@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ShopBackgroundSystem.Helpers;
+using ShopBackgroundSystem.Models;
 using ShopBackgroundSystem.Services.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
@@ -48,10 +49,11 @@ namespace ShopServerSystem.Helpers
             );
             //转换成JwtSecurityToken
             var jwtToken = (JwtSecurityToken)validatedToken;
-            //获取用户ID
+            //获取用户账号
             var uaccount = jwtToken.Claims.First(c => c.Type == "uaccount").Value;
-            context.Items["User"] = service.GetByAccount(uaccount);
             var userRole = jwtToken.Claims.First(c => c.Type == "role").Value;
+            Console.WriteLine(jwtToken);
+            context.Items["User"] = new User { Uaccount = uaccount, Upwd = "default", Utype = userRole };
             context.Items["Role"] = userRole;
         }
     }

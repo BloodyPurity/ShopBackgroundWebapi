@@ -187,7 +187,6 @@ namespace ShopBackgroundSystem.Models
 
                 entity.Property(e => e.Time)
                     .HasColumnType("datetime")
-                    .ValueGeneratedOnAddOrUpdate()
                     .HasColumnName("time");
 
                 entity.Property(e => e.Uaccount).HasColumnName("uaccount");
@@ -221,7 +220,6 @@ namespace ShopBackgroundSystem.Models
 
                 entity.Property(e => e.Time)
                     .HasColumnType("datetime")
-                    .ValueGeneratedOnAddOrUpdate()
                     .HasColumnName("time");
 
                 entity.Property(e => e.Uaccount).HasColumnName("uaccount");

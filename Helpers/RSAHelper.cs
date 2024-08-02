@@ -69,9 +69,14 @@ M90q4516KWlTtK2u99442mNi7hNmjryBVwk62foWo8w=";
         {
             return "";
         }
-
-
-        return Encoding.UTF8.GetString(_privateKeyRsaProvider.Decrypt(Convert.FromBase64String(cipherText), false));
+        try
+        {
+            return Encoding.UTF8.GetString(_privateKeyRsaProvider.Decrypt(Convert.FromBase64String(cipherText), false));
+        }
+        catch
+        {
+            return "";
+        }
     }
 
     public string Encrypt(string text)

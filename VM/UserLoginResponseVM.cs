@@ -2,9 +2,9 @@
 
 namespace ShopBackgroundSystem.VM
 {
-    public class UserResponseVM
+    public class UserLoginResponseVM
     {
-        public UserResponseVM(User user,string token)
+        public UserLoginResponseVM(User user,string token)
         {
             Username = user.Uaccount;
             Token = token;

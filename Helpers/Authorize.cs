@@ -13,7 +13,7 @@ namespace ShopBackgroundSystem.Helpers
             var user = (User)context.HttpContext.Items["User"];
             if (user == null)
             {
-                context.Result = new JsonResult(new { message = "未授权" })
+                context.Result = new JsonResult(new { message = "登录了吗您呐" })
                 {
                     StatusCode = StatusCodes.Status401Unauthorized
                 };
@@ -22,17 +22,18 @@ namespace ShopBackgroundSystem.Helpers
     }
     public class AuthRoleAttribute : Attribute, IAuthorizationFilter
     {
-        string[] Role;
-        public AuthRoleAttribute(string[] role)
+        
+        string[] Requiredrole;
+        public AuthRoleAttribute(string[] requiredrole)
         {
-            Role = role;
+            Requiredrole = requiredrole;
         }
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             var thisRole = (string)context.HttpContext.Items["Role"];
-            if (!Role.Contains(thisRole))
+            if (!Requiredrole.Contains(thisRole))
             {
-                context.Result = new JsonResult(new { message = "非法身份" })
+                context.Result = new JsonResult(new { message = "身份验证失败" })
                 {
                     StatusCode = StatusCodes.Status401Unauthorized
                 };

@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using ShopBackgroundSystem.Helpers;
 using ShopBackgroundSystem.Models;
+using ShopBackgroundSystem.Services.Implementations;
 using ShopBackgroundSystem.Services.Interfaces;
 using ShopServerSystem.Helpers;
 using ShopServerSystem.Services.Implementation;
@@ -24,6 +26,8 @@ namespace ShopBackgroundSystem
             );
             builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection(nameof(AuthSettings)));
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IPictureService, PictureService>();
+            builder.Services.AddSingleton(typeof(RSAHelper));
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -56,7 +60,7 @@ namespace ShopBackgroundSystem
             });
             builder.Services.AddCors(
                 option => option.AddDefaultPolicy(
-                    p => p.AllowAnyMethod().AllowAnyHeader().AllowCredentials().WithOrigins("https://localhost:7144/", "http://localhost:8080/")
+                    p => p.AllowAnyMethod().AllowAnyHeader().AllowCredentials().WithOrigins("https://localhost:7145/", "http://localhost:8080/")
                     )
                 );
             var app = builder.Build();
@@ -67,10 +71,17 @@ namespace ShopBackgroundSystem
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseHttpsRedirection();
+
             app.UseCors();
             app.UseMiddleware<JwtMiddleWare>();
             app.UseAuthorization();
-
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.ContentRootPath, "Uploads")),
+                RequestPath = "/uploads"  //≈‰÷√«Î«Û¬∑æ∂
+            });
 
             app.MapControllers();
 

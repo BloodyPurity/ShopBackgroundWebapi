@@ -2,11 +2,11 @@
 
 namespace ShopBackgroundSystem.Controllers
 {
-    public class StoreController : Controller
+    public class StoreController : ControllerBase
     {
         public IActionResult Index()
         {
-            return View();
+            return Ok();
         }
     }
 }

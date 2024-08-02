@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace ShopBackgroundSystem.Helper
+namespace ShopBackgroundSystem.Helpers
 {
     public class MD5Helper
     {
