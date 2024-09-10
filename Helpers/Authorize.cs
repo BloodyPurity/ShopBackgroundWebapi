@@ -10,10 +10,10 @@ namespace ShopBackgroundSystem.Helpers
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var user = (User)context.HttpContext.Items["User"];
+            var user = context.HttpContext.Items["User"] as User;
             if (user == null)
             {
-                context.Result = new JsonResult(new { message = "登录了吗您呐" })
+                context.Result = new JsonResult(new { message = "尚未登录" })
                 {
                     StatusCode = StatusCodes.Status401Unauthorized
                 };
@@ -30,7 +30,7 @@ namespace ShopBackgroundSystem.Helpers
         }
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var thisRole = (string)context.HttpContext.Items["Role"];
+            var thisRole = context.HttpContext.Items["Role"] as string;
             if (!Requiredrole.Contains(thisRole))
             {
                 context.Result = new JsonResult(new { message = "身份验证失败" })

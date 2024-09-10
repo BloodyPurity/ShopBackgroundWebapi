@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ShopBackgroundSystem.Extensions;
 using ShopBackgroundSystem.Helpers;
 using ShopBackgroundSystem.Models;
 using ShopBackgroundSystem.VM;
@@ -28,8 +29,12 @@ namespace ShopBackgroundSystem.Controllers
                 pageIndex = TotalPage;
             if (pageIndex < 1)
                 pageIndex = 1;
-            var list = await _customerDbContext.Goodsstockinlogs.OrderByDescending(i => i.Time)
-                .Skip(pageIndex * pageSize - pageSize).Take(pageSize).ToListAsync();
+            //优化分页查询速度，先查ID，再通过ID查数据。
+            var idlist = await _customerDbContext.Goodsstockinlogs.AsNoTracking().OrderByDescending(i => i.Time)
+                .Skip(pageIndex * pageSize - pageSize).Take(pageSize)
+                .Select(i=>i.Id).ToListAsync();
+            var list = await _customerDbContext.Goodsstockinlogs.AsNoTracking().Where(i => idlist.Contains(i.Id))
+                .OrderByDescending(i => i.Time).ToListAsync();
             var result = new
             {
                 nocheckedcountin,
@@ -50,8 +55,9 @@ namespace ShopBackgroundSystem.Controllers
                 pageIndex = TotalPage;
             if (pageIndex < 1)
                 pageIndex = 1;
-            var list = await _customerDbContext.Goodsstockoutlogs.OrderByDescending(i => i.Time)
-                .Skip(pageIndex * pageSize - pageSize).Take(pageSize).ToListAsync();
+            var idlist = await _customerDbContext.Goodsstockoutlogs.AsNoTracking().OrderByDescending(i => i.Time)
+                .Skip(pageIndex * pageSize - pageSize).Take(pageSize).Select(l=>l.Id).ToListAsync();
+            var list = await _customerDbContext.Goodsstockoutlogs.AsNoTracking().Where(i => idlist.Contains(i.Id)).OrderByDescending(i => i.Time).ToListAsync();
             var result = new
             {
                 nocheckedcountout,
@@ -70,8 +76,9 @@ namespace ShopBackgroundSystem.Controllers
                 pageIndex = TotalPage;
             if (pageIndex < 1)
                 pageIndex = 1;
-            var list = await _customerDbContext.Goodsstockinlogs.OrderByDescending(i => i.Time).Where(r => r.Uaccount == uaccount)
-                .Skip(pageIndex * pageSize - pageSize).Take(pageSize).ToListAsync();
+            var idlist = await _customerDbContext.Goodsstockinlogs.AsNoTracking().OrderByDescending(i => i.Time).Where(r => r.Uaccount == uaccount)
+                .Skip(pageIndex * pageSize - pageSize).Take(pageSize).Select(l=>l.Id).ToListAsync();
+            var list = await _customerDbContext.Goodsstockinlogs.AsNoTracking().Where(i=>idlist.Contains(i.Id)).OrderByDescending(i=>i.Time).ToListAsync();
             var result = new
             {
                 TotalCount,
@@ -89,8 +96,9 @@ namespace ShopBackgroundSystem.Controllers
                 pageIndex = TotalPage;
             if (pageIndex < 1)
                 pageIndex = 1;
-            var list = await _customerDbContext.Goodsstockoutlogs.OrderByDescending(i => i.Time).Where(r => r.Uaccount == uaccount)
-                .Skip(pageIndex * pageSize - pageSize).Take(pageSize).ToListAsync();
+            var idlist = await _customerDbContext.Goodsstockoutlogs.AsNoTracking().OrderByDescending(i => i.Time).Where(r => r.Uaccount == uaccount)
+                .Skip(pageIndex * pageSize - pageSize).Take(pageSize).Select(i=>i.Id).ToListAsync();
+            var list = await _customerDbContext.Goodsstockoutlogs.AsNoTracking().Where(i => idlist.Contains(i.Id)).OrderByDescending(i => i.Time).ToListAsync();
             var result = new
             {
                 TotalCount,
@@ -130,6 +138,36 @@ namespace ShopBackgroundSystem.Controllers
             return Ok(list);
         }
         //库房入库操作记录增删改------------------------------------------------------
+        #region 已经弃用的代码
+        [Obsolete]
+        [HttpPost("autotestaddstockin")]
+        public async Task<ActionResult> AutoAddStockin()
+        {
+            Random rnd = new();
+            var _goodsname = await _customerDbContext.Goods.Select(g => g.Gname).ToListAsync();
+            var _provider = await _customerDbContext.Providers.Select(p => p.Name).ToListAsync();
+            if (_provider != null)
+            {
+                for(int i = 0; i < 100000; i++)
+                {
+                    var datetime = DateTime.Now.AddDays(rnd.NextInt64(-200, -1)).AddSeconds(rnd.NextInt64(-3600, 3600));
+                    var stockinlog = new Goodsstockinlog();
+                    stockinlog.Gname = _goodsname.PickRandom();
+                    stockinlog.Pname = _provider.PickRandom();
+                    stockinlog.Uaccount = "admin";
+                    stockinlog.Cost = 0;
+                    stockinlog.Count = 0;
+                    stockinlog.Notes = "";
+                    stockinlog.Time = datetime;
+                    stockinlog.Ischecked = 0;
+                    await _customerDbContext.Goodsstockinlogs.AddAsync(stockinlog);
+                }
+                await _customerDbContext.SaveChangesAsync();
+                return Ok(new { message = "记录添加成功！" });
+            }
+            return BadRequest(new { message = "不存在该商品或供应商！" });
+        }
+        #endregion
         [HttpPost("addstockin")]
         public async Task<ActionResult> AddStockin(StockInVM stockInVM)
         {
@@ -184,10 +222,10 @@ namespace ShopBackgroundSystem.Controllers
         public async Task<ActionResult> AddStockout(StockOutVM stockOutVM)
         {
             var _good = await _customerDbContext.Goods.SingleOrDefaultAsync(g => g.Gname == stockOutVM.Gname);
-            var discount = _good.Discount;
-            var price = _good.Price;
             if (_good != null)
             {
+                var price = _good.Price;
+                var discount = _good.Discount;
                 var stockoutlog = new Goodsstockoutlog();
                 stockoutlog.Gname = stockOutVM.Gname;
                 stockoutlog.Uaccount = stockOutVM.Uaccount;
@@ -219,23 +257,27 @@ namespace ShopBackgroundSystem.Controllers
             {
                 var gname = stockoutlog.Gname;
                 var _good = await _customerDbContext.Goods.SingleOrDefaultAsync(g => g.Gname == gname);
-                var discount = _good.Discount;
-                var price = _good.Price;
-                if (stockOutChange.Specialprice != null)
-                {//特殊处理价格不打折
-                    stockoutlog.Perprice = (double)stockOutChange.Specialprice;
-                    stockoutlog.Price = (double)stockOutChange.Specialprice * stockOutChange.Count;
+                if (_good != null)
+                {
+                    var discount = _good.Discount;
+                    var price = _good.Price;
+                    if (stockOutChange.Specialprice != null)
+                    {//特殊处理价格不打折
+                        stockoutlog.Perprice = (double)stockOutChange.Specialprice;
+                        stockoutlog.Price = (double)stockOutChange.Specialprice * stockOutChange.Count;
+                    }
+                    else
+                    {//不打折的商品discount为-1，所以取绝对值
+                        stockoutlog.Perprice = (double)price;
+                        stockoutlog.Price = (double)price * Math.Abs(discount) * stockOutChange.Count;
+                    }
+                    stockoutlog.Count = stockOutChange.Count;
+                    stockoutlog.Notes = stockOutChange.Notes;
+                    stockoutlog.Time = DateTime.Now;
+                    await _customerDbContext.SaveChangesAsync();
+                    return Ok(new { message = "记录修改成功！" });
                 }
-                else
-                {//不打折的商品discount为-1，所以取绝对值
-                    stockoutlog.Perprice = (double)price;
-                    stockoutlog.Price = (double)price * Math.Abs(discount) * stockOutChange.Count;
-                }
-                stockoutlog.Count = stockOutChange.Count;
-                stockoutlog.Notes = stockOutChange.Notes;
-                stockoutlog.Time = DateTime.Now;
-                await _customerDbContext.SaveChangesAsync();
-                return Ok(new { message = "记录修改成功！" });
+                return BadRequest(new { message = "不存在该商品！" });
             }
             return BadRequest(new { message = "该记录已被确定或不存在！" });
         }

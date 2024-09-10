@@ -15,7 +15,7 @@ namespace ShopBackgroundSystem.Models
             : base(options)
         {
         }
-
+        
         public virtual DbSet<Announcement> Announcements { get; set; } = null!;
         public virtual DbSet<Announcementuser> Announcementusers { get; set; } = null!;
         public virtual DbSet<Asset> Assets { get; set; } = null!;
@@ -27,7 +27,6 @@ namespace ShopBackgroundSystem.Models
         public virtual DbSet<Provider> Providers { get; set; } = null!;
         public virtual DbSet<Usalary> Usalaries { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
-        public virtual DbSet<VAnnouncementuser> VAnnouncementusers { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -63,7 +62,6 @@ namespace ShopBackgroundSystem.Models
 
                 entity.Property(e => e.Time)
                     .HasColumnType("datetime")
-                    .ValueGeneratedOnAddOrUpdate()
                     .HasColumnName("time");
 
                 entity.Property(e => e.Uid).HasColumnName("uid");
@@ -80,7 +78,13 @@ namespace ShopBackgroundSystem.Models
 
                 entity.Property(e => e.Announcementid).HasColumnName("announcementid");
 
-                entity.Property(e => e.Userid).HasColumnName("userid");
+                entity.Property(e => e.Uaccount)
+                .HasMaxLength(255)
+                .HasColumnName("uaccount");
+
+                entity.Property(e => e.Isconfirmed)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("isconfirmed");
             });
 
             modelBuilder.Entity<Asset>(entity =>
@@ -116,7 +120,6 @@ namespace ShopBackgroundSystem.Models
 
                 entity.Property(e => e.Time)
                     .HasColumnType("datetime")
-                    .ValueGeneratedOnAddOrUpdate()
                     .HasColumnName("time");
             });
 
@@ -317,29 +320,6 @@ namespace ShopBackgroundSystem.Models
                     .HasColumnName("USex");
 
                 entity.Property(e => e.Utype).HasMaxLength(255);
-            });
-
-            modelBuilder.Entity<VAnnouncementuser>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToView("v_announcementuser");
-
-                entity.Property(e => e.Announcementid).HasColumnName("announcementid");
-
-                entity.Property(e => e.Id).HasColumnName("id");
-
-                entity.Property(e => e.Name)
-                    .HasMaxLength(255)
-                    .HasColumnName("name");
-
-                entity.Property(e => e.Uaccount).HasMaxLength(30);
-
-                entity.Property(e => e.Uname)
-                    .HasMaxLength(255)
-                    .HasColumnName("UName");
-
-                entity.Property(e => e.Userid).HasColumnName("userid");
             });
 
             OnModelCreatingPartial(modelBuilder);

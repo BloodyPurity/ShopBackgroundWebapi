@@ -16,7 +16,7 @@ namespace ShopServerSystem.Services.Implementation
         private User _user;
         private readonly AuthSettings _authSettings;
 
-        public UserService(IOptions<AuthSettings> authSettings) 
+        public UserService(IOptions<AuthSettings> authSettings)
         { 
             _authSettings = authSettings.Value;
         }
@@ -47,7 +47,7 @@ namespace ShopServerSystem.Services.Implementation
                         new Claim("role",user.Utype)
                     }),
                 //过期时间
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddMinutes(30),
                 //证书签名
                 SigningCredentials=new SigningCredentials
                 (

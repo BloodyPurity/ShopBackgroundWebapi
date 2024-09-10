@@ -10,9 +10,9 @@ using System.Security.Cryptography;
 
 namespace ShopBackgroundSystem.Controllers
 {
+    [Authorize]
     [Route("1.0/[controller]")]
     [ApiController]
-    [Authorize,AuthRole(requiredrole: new string[] { "admin" })]
     public class EmploeeController : ControllerBase
     {
         private CustomerDbContext _customerDbContext;
@@ -29,6 +29,7 @@ namespace ShopBackgroundSystem.Controllers
         /// <param name="pageIndex"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
+        [AuthRole(requiredrole: new string[] { "admin" })]
         [HttpGet("getall/{pageSize}-{pageIndex}")]
         public async Task<ActionResult<IEnumerable<User>>> GetAllEmploee(int pageIndex,int pageSize)
         {
@@ -54,11 +55,18 @@ namespace ShopBackgroundSystem.Controllers
             };
             return Ok(result);
         }
+        [HttpGet("getEname")]
+        public async Task<ActionResult<IEnumerable<User>>> GetEname()
+        {
+            var Enames= await _customerDbContext.Users.Select(a=>a.Uname).ToListAsync();
+            return Ok(Enames);
+        }
         /// <summary>
         /// 重置密码
         /// </summary>
         /// <param name="uaccount"></param>
         /// <returns></returns>
+        [AuthRole(requiredrole: new string[] { "admin" })]
         [HttpPut("reset/{uaccount}")]
         public async Task<ActionResult> ResetPassword(string uaccount)
         {
@@ -82,6 +90,7 @@ namespace ShopBackgroundSystem.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         [HttpPut("changeinfo/{uaccount}")]
+        [AuthRole(requiredrole: new string[] { "admin" })]
         public async Task<ActionResult> ChangeInfo(string uaccount,UserChangeVM user)
         {
             if(!string.IsNullOrEmpty(uaccount) && user != null)
@@ -115,6 +124,7 @@ namespace ShopBackgroundSystem.Controllers
         /// <param name="uaccount"></param>
         /// <returns></returns>
         [HttpDelete("delete/{uaccount}")]
+        [ AuthRole(requiredrole: new string[] { "admin" })]
         public async Task<ActionResult> DeleteUser(string uaccount)
         {
             if (!string.IsNullOrEmpty(uaccount))
@@ -136,6 +146,7 @@ namespace ShopBackgroundSystem.Controllers
         /// <param name="uaccount"></param>
         /// <returns></returns>
         [HttpPost("newman/{uaccount}")]
+        [AuthRole(requiredrole: new string[] { "admin" })]
         public async Task<ActionResult> AddUser(string uaccount)
         {
             if (!string.IsNullOrEmpty(uaccount))

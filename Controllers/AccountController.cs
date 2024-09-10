@@ -88,6 +88,7 @@ namespace ShopBackgroundSystem.Controllers
         /// <param name="file"></param>
         /// <param name="env"></param>
         /// <returns></returns>
+        [Obsolete]
         [HttpPost("picture/upload")]
         public IActionResult UploadFile(IFormFile file,                         //文件对象
                                     [FromServices] IWebHostEnvironment env)  //局部注入主机环境对象

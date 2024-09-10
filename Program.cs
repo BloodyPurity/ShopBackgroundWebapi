@@ -60,7 +60,7 @@ namespace ShopBackgroundSystem
             });
             builder.Services.AddCors(
                 option => option.AddDefaultPolicy(
-                    p => p.AllowAnyMethod().AllowAnyHeader().AllowCredentials().WithOrigins("https://localhost:7145/", "http://localhost:8080/")
+                    p => p.AllowAnyMethod().AllowAnyHeader().AllowCredentials().WithOrigins("https://localhost:7145/", "http://localhost:8080/", "http://10.11.6.31:8080/")
                     )
                 );
             var app = builder.Build();

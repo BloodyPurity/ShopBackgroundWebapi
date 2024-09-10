@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ShopBackgroundSystem.Helpers;
 using ShopBackgroundSystem.Models;
@@ -26,7 +27,16 @@ namespace ShopServerSystem.Helpers
             if (token != null)
             {
                 //验证
-                AttachUserToContext(context, service, token);
+                try
+                {
+                    AttachUserToContext(context, service, token);
+                }
+                catch (SecurityTokenExpiredException)
+                {
+                    context.Response.StatusCode = 401; // Unauthorized
+                    await context.Response.WriteAsJsonAsync(new {message = "token已经过期，请重新登录。" });
+                    return;
+                }
             }
             //调用下一个中间件
             await _requestDelegate(context);

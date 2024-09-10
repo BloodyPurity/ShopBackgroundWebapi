@@ -7,6 +7,7 @@ namespace ShopBackgroundSystem.Models
     {
         public int Rid { get; set; }
         public int Announcementid { get; set; }
-        public int Userid { get; set; }
+        public string Uaccount { get; set; } = null!;
+        public ulong Isconfirmed { get; set; }
     }
 }

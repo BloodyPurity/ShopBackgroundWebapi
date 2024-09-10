@@ -107,9 +107,9 @@ namespace ShopBackgroundSystem.Controllers
         [AuthRole(requiredrole: new string[] { "admin", "user" })]
         [HttpGet("getGoodsOnSingle")]
         public async Task<ActionResult<IEnumerable<Good>>> GetGoodsOnSingle(string Name)
-        {
+        {   
             var res = await _customerDbContext.Goods
-                .Where(g => g.Isdeleted == 0 && g.Gname == Name)
+                .Where(g => g.Isdeleted == 0 && g.Gname.Contains(Name))
                 .Select(n => new { n.Gname, n.Gicon, n.Gtype, n.Gcount, n.Price, n.Discount, n.Notes })
                 .ToListAsync();
             if(res !=null)
